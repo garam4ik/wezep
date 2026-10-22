@@ -22,6 +22,7 @@ let currentPanelItem = null;
 const FAVORITES_KEY = "wezeraapp-favorite-districts-v1";
 const weatherCache = new Map();
 const weatherPending = new Map();
+const districtTemperatures = new WeakMap();
 const featureNames = new WeakMap();
 let settlementsPromise = null;
 let settlementsData = null;
@@ -138,20 +139,62 @@ function isRedOblast(feature) {
   return ["запорізька", "запорожская", "zaporizhzhia", "zaporizhya", "zaporozhye", "херсонська", "херсонская", "kherson", "луганська", "луганская", "luhansk", "lugansk", "донецька", "донецкая", "donetsk", "крим", "crimea", "ар крим", "автономна республіка крим", "автономная республика крым"]
     .some(alias => name.includes(normalize(alias)));
 }
+function temperatureColor(temp) {
+  // Колір від прохолодного блакитного до темно-червоного за поточною температурою.
+  const stops = [
+    [-15, [104, 177, 255]], [-5, [130, 196, 255]], [0, [151, 211, 255]],
+    [10, [190, 231, 255]], [20, [190, 20, 35]], [30, [92, 0, 18]]
+  ];
+  const t = Math.max(stops[0][0], Math.min(stops[stops.length - 1][0], temp));
+  for (let i = 1; i < stops.length; i++) {
+    if (t <= stops[i][0]) {
+      const [t0, c0] = stops[i - 1], [t1, c1] = stops[i];
+      const f = (t - t0) / (t1 - t0);
+      return `rgb(${c0.map((v, j) => Math.round(v + (c1[j] - v) * f)).join(",")})`;
+    }
+  }
+  return "#5c0012";
+}
 function baseStyle(feature) {
-  const red = isRedOblast(feature) || (feature && districtItems.some(item => item.feature === feature && item.oblast && isRedOblast(item.oblast)));
-  // Keep the exact same dark outline used by ordinary districts; only the fill changes.
-  return { color: "#252b35", weight: 0.9, opacity: 1, fillColor: red ? "#f3a0a0" : "#3b414d", fillOpacity: 1 };
+  const item = districtItems.find(entry => entry.feature === feature);
+  const temp = item ? districtTemperatures.get(item) : null;
+  // Якщо температура ще завантажується — залишаємо нейтральний колір.
+  const fillColor = Number.isFinite(temp) ? temperatureColor(temp) : "#3b414d";
+  return { color: "#252b35", weight: 0.9, opacity: 1, fillColor, fillOpacity: 1 };
 }
 function activeStyle(item) {
-  return item.oblast && isRedOblast(item.oblast)
-    ? { color: "#fff", weight: 2.2, opacity: 1, fillColor: "#ffb5b5", fillOpacity: 1 }
-    : { color: "#fff", weight: 2.2, opacity: 1, fillColor: "#596273", fillOpacity: 1 };
+  const temp = districtTemperatures.get(item);
+  return { color: "#fff", weight: 2.2, opacity: 1, fillColor: Number.isFinite(temp) ? temperatureColor(temp) : "#596273", fillOpacity: 1 };
 }
 function refreshStyles() {
   for (const item of districtItems) {
-    const active = item === hoveredItem;
-    item.layer.setStyle(active ? activeStyle(item) : baseStyle(item.feature));
+    item.layer.setStyle(item === hoveredItem ? activeStyle(item) : baseStyle(item.feature));
+  }
+}
+async function loadDistrictTemperatureColors() {
+  // Batch requests to avoid sending one weather request per district.
+  const entries = districtItems.map(item => ({ item, center: centerOf(item.feature) })).filter(x => x.center);
+  const batchSize = 40;
+  for (let offset = 0; offset < entries.length; offset += batchSize) {
+    const batch = entries.slice(offset, offset + batchSize);
+    const params = new URLSearchParams({
+      latitude: batch.map(x => x.center[0].toFixed(4)).join(","),
+      longitude: batch.map(x => x.center[1].toFixed(4)).join(","),
+      current: "temperature_2m", timezone: "Europe/Kyiv"
+    });
+    try {
+      const response = await fetch(`${WEATHER_URL}?${params}`);
+      if (!response.ok) throw new Error("Weather colors unavailable");
+      const payload = await response.json();
+      const results = Array.isArray(payload) ? payload : [payload];
+      results.forEach((result, index) => {
+        const temp = result?.current?.temperature_2m;
+        if (Number.isFinite(temp) && batch[index]) districtTemperatures.set(batch[index].item, temp);
+      });
+      refreshStyles();
+    } catch (error) {
+      console.warn("Не вдалося оновити температурні кольори районів:", error);
+    }
   }
 }
 function escapeHtml(value) {
@@ -572,6 +615,7 @@ function init() {
     // Draw only oblast boundaries that remain on the map.
     L.geoJSON({ ...oblasts, features: oblastFeatures }, { pane: "oblastPane", interactive: false, style: feature => ({ color: "#252b35", weight: 0.9, opacity: 1, fill: false }) }).addTo(map);
     addOblastLabels();
+    void loadDistrictTemperatureColors();
     const bounds = districtLayer.getBounds();
     if (bounds.isValid()) { fullMapBounds = bounds; map.fitBounds(bounds, { padding: [12, 12] }); }
     document.getElementById("map-loading").hidden = true;
