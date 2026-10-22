@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>Карта погоди України</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <h1 class="wezeraapp-title">WezeraApp</h1>
+  <main id="map" aria-label="Інтерактивна карта адміністративних меж України"></main>
+  <div id="district-tooltip" class="district-tooltip" role="status" aria-live="polite" hidden></div>
+  <aside id="weather-panel" class="weather-panel" aria-labelledby="panel-title" hidden>
+    <header class="panel-header">
+      <div><span class="panel-eyebrow">ПОГОДА РАЙОНУ</span><h1 id="panel-title">Оберіть район</h1></div>
+      <button id="panel-close" class="panel-close" type="button" aria-label="Закрити панель">×</button>
+    </header>
+    <div id="panel-content" class="panel-content"><p class="muted">Завантаження погоди…</p></div>
+  </aside>
+  <div id="map-loading" role="status">Завантаження меж карти…</div>
+  <section id="whats-new" class="whats-new" role="dialog" aria-modal="true" aria-labelledby="whats-new-title" hidden>
+    <div class="whats-new-card">
+      <div class="whats-new-kicker">WEZERAAPP · ОНОВЛЕННЯ</div>
+      <h2 id="whats-new-title">Що нового?</h2>
+      <ul id="whats-new-list">
+        <li>Додано та повернуто на карту Донецьку область.</li>
+        <li>Крим, Луганська, Запорізька й Херсонська області виділені світло-червоним.</li>
+        <li>Збережено звичайний колір і товщину меж районів.</li>
+      </ul>
+      <button id="whats-new-ok" type="button">ОК, зрозуміло</button>
+    </div>
+  </section>
+</body>
+</html>
