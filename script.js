@@ -732,3 +732,104 @@ document.addEventListener("DOMContentLoaded", () => {
     button.innerHTML = open ? '🌡 <span>Сховати шкалу</span>' : '🌡 <span>Шкала температур</span>';
   });
 });
+
+
+// v16: interactive distance measurement; does not alter district layers or weather data.
+document.addEventListener("DOMContentLoaded", () => {
+  const button = document.getElementById("measure-toggle");
+  const status = document.getElementById("map-action-status");
+  if (!button || !status) return;
+  let active = false;
+  let points = [];
+  let line = null;
+  let markers = [];
+  const clearMeasure = () => {
+    if (line && map) map.removeLayer(line);
+    markers.forEach(marker => { if (map) map.removeLayer(marker); });
+    line = null; markers = []; points = [];
+  };
+  button.addEventListener("click", () => {
+    if (!active) {
+      active = true; button.setAttribute("aria-pressed", "true");
+      button.innerHTML = '📏 <span>Завершити вимірювання</span>';
+      status.textContent = "Натисніть на карту, щоб позначити початок і кінець маршруту."; status.hidden = false;
+    } else {
+      active = false; clearMeasure(); button.setAttribute("aria-pressed", "false");
+      button.innerHTML = '📏 <span>Виміряти відстань</span>';
+      status.textContent = "Вимірювання очищено.";
+      window.setTimeout(() => { status.hidden = true; }, 2200);
+    }
+  });
+  const waitForMap = () => {
+    if (typeof map === "undefined" || !map || typeof L === "undefined") { window.setTimeout(waitForMap, 300); return; }
+    map.on("click", event => {
+      if (!active) return;
+      if (points.length >= 2) clearMeasure();
+      points.push(event.latlng);
+      markers.push(L.circleMarker(event.latlng, { radius: 6, color: "#ffffff", weight: 2, fillColor: "#168cff", fillOpacity: 1, interactive: false }).addTo(map));
+      if (points.length === 2) {
+        line = L.polyline(points, { color: "#ffd83d", weight: 4, dashArray: "8 6", interactive: false }).addTo(map);
+        const distance = map.distance(points[0], points[1]);
+        const value = distance >= 1000 ? (distance / 1000).toFixed(2) + " км" : Math.round(distance) + " м";
+        status.textContent = "Відстань по прямій: " + value + ". Натисніть ще раз на карту для нового вимірювання.";
+      } else status.textContent = "Початок позначено. Натисніть на карту в іншому місці.";
+      status.hidden = false;
+    });
+  };
+  waitForMap();
+});
+
+
+// v17: tap-to-copy geographic coordinates without modifying map layers.
+document.addEventListener("DOMContentLoaded", () => {
+  const button = document.getElementById("coordinates-toggle");
+  const status = document.getElementById("map-action-status");
+  if (!button || !status) return;
+  let active = false;
+  button.addEventListener("click", () => {
+    active = !active;
+    button.setAttribute("aria-pressed", String(active));
+    button.innerHTML = active ? '⌖ <span>Скасувати вибір точки</span>' : '⌖ <span>Координати точки</span>' ;
+    status.textContent = active ? "Натисніть на карту, щоб скопіювати координати точки." : "Вибір координат скасовано.";
+    status.hidden = false;
+    if (!active) window.setTimeout(() => { status.hidden = true; }, 1800);
+  });
+  const waitForMap = () => {
+    if (typeof map === "undefined" || !map || typeof L === "undefined") { window.setTimeout(waitForMap, 300); return; }
+    map.on("click", async event => {
+      if (!active) return;
+      const lat = event.latlng.lat.toFixed(5);
+      const lon = event.latlng.lng.toFixed(5);
+      const coords = `${lat}, ${lon}`;
+      try {
+        if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(coords);
+        else {
+          const field = document.createElement("textarea"); field.value = coords; field.style.position = "fixed"; field.style.opacity = "0"; document.body.appendChild(field); field.select();
+          const copied = document.execCommand("copy"); field.remove(); if (!copied) throw new Error("copy unavailable");
+        }
+        status.textContent = `Координати скопійовано: ${coords}`;
+      } catch (_) { status.textContent = `Координати точки: ${coords} (скопіюйте вручну)`; }
+      status.hidden = false;
+      active = false; button.setAttribute("aria-pressed", "false"); button.innerHTML = '⌖ <span>Координати точки</span>' ;
+    });
+  };
+  waitForMap();
+});
+
+
+// v18: toggle oblast labels for a cleaner map view; underlying map data is unchanged.
+(() => {
+  const button = document.getElementById("labels-toggle");
+  if (!button) return;
+  let visible = true;
+  button.addEventListener("click", () => {
+    visible = !visible;
+    for (const marker of oblastLabelMarkers) {
+      if (visible && map && !map.hasLayer(marker)) marker.addTo(map);
+      else if (!visible && map && map.hasLayer(marker)) map.removeLayer(marker);
+    }
+    button.setAttribute("aria-pressed", String(visible));
+    button.innerHTML = visible ? 'Aa <span>Приховати назви</span>' : 'Aa <span>Показати назви</span>';
+    showMapStatus(visible ? "Назви областей показано." : "Назви областей приховано для чистішого огляду.");
+  });
+})();
