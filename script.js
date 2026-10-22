@@ -550,6 +550,70 @@ async function openWeatherPanel(item) {
   }
 }
 
+
+async function loadNeighborRegions() {
+  const countries = [
+    { code: "POL", name: "Польща" },
+    { code: "MDA", name: "Молдова" },
+    { code: "RUS", name: "Росія" },
+    { code: "BLR", name: "Білорусь" },
+    { code: "ROU", name: "Румунія" },
+    { code: "SVK", name: "Словаччина" },
+    { code: "HUN", name: "Угорщина" }
+  ];
+  const pane = map.createPane("neighborRegionsPane");
+  pane.style.zIndex = 425;
+  pane.style.pointerEvents = "none";
+  const labelPane = map.createPane("neighborRegionLabelsPane");
+  labelPane.style.zIndex = 640;
+  labelPane.style.pointerEvents = "none";
+  const regionName = feature => {
+    const p = feature && feature.properties ? feature.properties : {};
+    for (const key of ["shapeName", "NAME_1", "name", "name_1", "region", "NAME", "shapeName_en", "admin1Name", "NAME_1_EN"]) {
+      if (p[key] && String(p[key]).trim()) return String(p[key]).trim();
+    }
+    return "Регіон";
+  };
+  await Promise.all(countries.map(async country => {
+    try {
+      const metaResponse = await fetch(`https://www.geoboundaries.org/api/current/gbOpen/${country.code}/ADM1/`);
+      if (!metaResponse.ok) return;
+      const metadata = await metaResponse.json();
+      const geoUrl = metadata.gjDownloadURL || metadata.geojson || metadata.downloadURL;
+      if (!geoUrl) return;
+      const dataResponse = await fetch(geoUrl);
+      if (!dataResponse.ok) return;
+      const data = await dataResponse.json();
+      const features = (data.features || []).filter(feature => feature && feature.geometry);
+      if (!features.length) return;
+      const layer = L.geoJSON({ type: "FeatureCollection", features }, {
+        pane: "neighborRegionsPane",
+        interactive: false,
+        style: () => ({ color: "#d8e6f5", weight: 1.15, opacity: 0.9, fill: false, lineCap: "round", lineJoin: "round" })
+      }).addTo(map);
+      features.forEach(feature => {
+        const regionLayer = L.geoJSON(feature);
+        const bounds = regionLayer.getBounds();
+        if (!bounds.isValid()) return;
+        // Avoid clutter from very small regions; labels are names only, never weather values.
+        const center = bounds.getCenter();
+        const name = regionName(feature);
+        const icon = L.divIcon({
+          className: "neighbor-region-label-icon",
+          html: `<div class="neighbor-region-label">${escapeHtml(name)}</div>`,
+          iconSize: [150, 20],
+          iconAnchor: [75, 10]
+        });
+        L.marker(center, { icon, pane: "neighborRegionLabelsPane", interactive: false, keyboard: false }).addTo(map);
+      });
+      // Keep the layer referenced by Leaflet; no click handlers or weather are attached.
+      void layer;
+    } catch (error) {
+      console.warn(`Could not load administrative regions for ${country.code}:`, error);
+    }
+  }));
+}
+
 function init() {
   renderFavorites();
   document.getElementById("district-favorite")?.addEventListener("click", () => {
@@ -671,6 +735,9 @@ function init() {
     L.geoJSON(outlineData, { pane: "flagGlowPane", interactive: false, style: () => ({ color: "#238cff", weight: 3, opacity: 0.98, fill: false, lineCap: "round", lineJoin: "round" }) }).addTo(map);
     L.geoJSON(outlineData, { pane: "oblastPane", interactive: false, style: () => ({ color: "#252b35", weight: 0.9, opacity: 1, fill: false }) }).addTo(map);
     addOblastLabels();
+    // v23: show first-level administrative regions in neighboring countries too.
+    // These are boundary/name overlays only; weather remains Ukraine-only.
+    void loadNeighborRegions();
     void loadDistrictTemperatureColors();
     const bounds = districtLayer.getBounds();
     if (bounds.isValid()) { fullMapBounds = bounds; map.fitBounds(bounds, { padding: [12, 12] }); }

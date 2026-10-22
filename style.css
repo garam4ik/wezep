@@ -135,3 +135,8 @@ body.aurora-mode::after { opacity: 1; animation: aurora-drift 9s ease-in-out inf
 .snow-overlay[hidden] { display: none !important; }
 @keyframes wezera-snowfall { from { background-position: 0 -220px; } to { background-position: 0 220px; } }
 @media (prefers-reduced-motion: reduce) { .snow-overlay { animation: none; } }
+
+
+/* v23: neighboring-country administrative region names (no weather data). */
+.neighbor-region-label-icon { background: transparent; border: 0; }
+.neighbor-region-label { color: #f4f7fb; font: 600 10px/1.1 Arial, sans-serif; text-align: center; white-space: nowrap; text-shadow: 0 1px 3px #000, 1px 0 3px #000, -1px 0 3px #000, 0 -1px 3px #000; opacity: .92; }
