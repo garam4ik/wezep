@@ -18,7 +18,7 @@ body { font-family: Arial, sans-serif; }
 
 /* Permanent oblast labels */
 .oblast-label-icon { background: transparent; border: 0; }
-.oblast-label { color: #f4f6f8; font: 600 11px/1.15 Arial, sans-serif; text-align: center; white-space: nowrap; text-shadow: 0 1px 2px #000, 1px 0 2px #000, -1px 0 2px #000, 0 -1px 2px #000; pointer-events: none; }
+.oblast-label { display: inline-block; padding: 3px 6px; color: #fff; background: rgba(3, 10, 18, .78); border: 1px solid rgba(220, 235, 255, .78); border-radius: 4px; font: 700 11px/1.15 Arial, sans-serif; text-align: center; white-space: nowrap; text-shadow: 0 1px 2px #000; box-shadow: 0 1px 5px rgba(0,0,0,.6); pointer-events: none; }
 /* Compact weather drawer */
 .weather-panel { position: fixed; z-index: 12000; top: 12px; right: 12px; bottom: 12px; width: min(430px, calc(100vw - 24px)); color: #f3f4f6; background: #20252b; border: 1px solid #414953; border-radius: 14px; box-shadow: 0 12px 44px rgba(0,0,0,.65); display: flex; flex-direction: column; overflow: hidden; }
 .weather-panel[hidden] { display: none !important; }
