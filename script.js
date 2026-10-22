@@ -572,7 +572,7 @@ function init() {
   document.getElementById("panel-close").addEventListener("click", () => { document.getElementById("weather-panel").hidden = true; panelRequestSequence++; });
   document.addEventListener("keydown", e => { if (e.key === "Escape") { document.getElementById("weather-panel").hidden = true; panelRequestSequence++; } });
   map = L.map("map", { zoomControl: false, attributionControl: false, scrollWheelZoom: true, doubleClickZoom: true, preferCanvas: false }).setView([48.8, 31.2], 6);
-  // v20: darker satellite-style basemap behind Ukraine. The administrative/weather overlays remain unchanged.
+  // v21: extra-dark satellite basemap behind Ukraine. The administrative/weather overlays remain unchanged.
   L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
     maxZoom: 19,
     attribution: "Tiles © Esri"

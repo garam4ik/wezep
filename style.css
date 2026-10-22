@@ -5,7 +5,7 @@ body { font-family: Arial, sans-serif; }
 #map { position: fixed; inset: 0; width: 100vw; height: 100%; height: 100dvh; min-height: 100%; background: transparent; outline: none; }
 .leaflet-container { background: transparent !important; color: #fff; font-family: Arial, sans-serif; }
 /* v20: darker satellite imagery, without dimming Ukraine borders, labels, or weather overlays. */
-.leaflet-tile-pane { filter: brightness(.56) contrast(1.12) saturate(.78); }
+.leaflet-tile-pane { filter: brightness(.34) contrast(1.16) saturate(.68); }
 .leaflet-control-attribution, .leaflet-control-zoom { display: none !important; }
 .leaflet-overlay-pane svg { overflow: visible; }
 .leaflet-interactive { cursor: pointer; }
