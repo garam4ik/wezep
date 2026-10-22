@@ -139,4 +139,4 @@ body.aurora-mode::after { opacity: 1; animation: aurora-drift 9s ease-in-out inf
 
 /* v23: neighboring-country administrative region names (no weather data). */
 .neighbor-region-label-icon { background: transparent; border: 0; }
-.neighbor-region-label { color: #f4f7fb; font: 600 10px/1.1 Arial, sans-serif; text-align: center; white-space: nowrap; text-shadow: 0 1px 3px #000, 1px 0 3px #000, -1px 0 3px #000, 0 -1px 3px #000; opacity: .92; }
+.neighbor-region-label { color: #f4f7fb; font: 600 10px/1.1 Arial, sans-serif; text-align: center; white-space: nowrap; text-shadow: 0 1px 3px #000, 1px 0 3px #000, -1px 0 3px #000, 0 -1px 3px #000; opacity: .96; background: #07111dcc; border: 1px solid #b7d4ef99; border-radius: 3px; padding: 2px 3px; width: max-content; max-width: 150px; transform: translate(-50%, -50%); }
