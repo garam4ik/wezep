@@ -552,15 +552,12 @@ async function openWeatherPanel(item) {
 
 
 async function loadNeighborRegions() {
-  const countries = [
-    { code: "POL", name: "Польща" },
-    { code: "MDA", name: "Молдова" },
-    { code: "RUS", name: "Росія" },
-    { code: "BLR", name: "Білорусь" },
-    { code: "ROU", name: "Румунія" },
-    { code: "SVK", name: "Словаччина" },
-    { code: "HUN", name: "Угорщина" }
+  // All countries with available first-level administrative boundaries.
+  // Ukraine is intentionally excluded: its existing districts/oblasts and weather remain untouched.
+  const countryCodes = [
+    "AFG","ALB","DZA","AND","AGO","ATG","ARG","ARM","AUS","AUT","AZE","BHS","BHR","BGD","BRB","BLR","BEL","BLZ","BEN","BTN","BOL","BIH","BWA","BRA","BRN","BGR","BFA","BDI","CPV","KHM","CMR","CAN","CAF","TCD","CHL","CHN","COL","COM","COG","CRI","CIV","HRV","CUB","CYP","CZE","PRK","COD","DNK","DJI","DMA","DOM","ECU","EGY","SLV","GNQ","ERI","EST","SWZ","ETH","FJI","FIN","FRA","GAB","GMB","GEO","DEU","GHA","GRC","GRD","GTM","GIN","GNB","GUY","HTI","HND","HUN","ISL","IND","IDN","IRN","IRQ","IRL","ISR","ITA","JAM","JPN","JOR","KAZ","KEN","KIR","KWT","KGZ","LAO","LVA","LBN","LSO","LBR","LBY","LIE","LTU","LUX","MDG","MWI","MYS","MDV","MLI","MLT","MHL","MRT","MUS","MEX","FSM","MCO","MNG","MNE","MAR","MOZ","MMR","NAM","NRU","NPL","NLD","NZL","NIC","NER","NGA","MKD","NOR","OMN","PAK","PLW","PAN","PNG","PRY","PER","PHL","POL","PRT","QAT","KOR","MDA","ROU","RUS","RWA","KNA","LCA","VCT","WSM","SMR","STP","SAU","SEN","SRB","SYC","SLE","SGP","SVK","SVN","SLB","SOM","ZAF","SSD","ESP","LKA","SDN","SUR","SWE","CHE","SYR","TJK","THA","TLS","TGO","TON","TTO","TUN","TUR","TKM","TUV","UGA","ARE","GBR","TZA","USA","URY","UZB","VUT","VAT","VEN","VNM","YEM","ZMB","ZWE","BOL","TWN","PSE","XKX"
   ];
+  const countries = [...new Set(countryCodes)].filter(code => code !== "UKR").map(code => ({ code }));
   const pane = map.createPane("neighborRegionsPane");
   pane.style.zIndex = 425;
   pane.style.pointerEvents = "none";
@@ -574,7 +571,7 @@ async function loadNeighborRegions() {
     }
     return "Регіон";
   };
-  await Promise.all(countries.map(async country => {
+  const loadCountry = async country => {
     try {
       const metaResponse = await fetch(`https://www.geoboundaries.org/api/current/gbOpen/${country.code}/ADM1/`);
       if (!metaResponse.ok) return;
@@ -611,7 +608,11 @@ async function loadNeighborRegions() {
     } catch (error) {
       console.warn(`Could not load administrative regions for ${country.code}:`, error);
     }
-  }));
+  };
+  // Small batches reduce load on the free public boundary service.
+  for (let i = 0; i < countries.length; i += 12) {
+    await Promise.all(countries.slice(i, i + 12).map(loadCountry));
+  }
 }
 
 function init() {
