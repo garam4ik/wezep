@@ -18,6 +18,8 @@ let hoveredLatLng = null;
 let requestSequence = 0;
 let oblastLabelMarkers = [];
 let panelRequestSequence = 0;
+let currentPanelItem = null;
+const FAVORITES_KEY = "wezeraapp-favorite-districts-v1";
 const weatherCache = new Map();
 const weatherPending = new Map();
 const featureNames = new WeakMap();
@@ -288,6 +290,25 @@ async function fetchWeatherAt(lat, lon, includeHistory = true) {
   const [forecast, history] = await Promise.all([forecastPromise, historyPromise]);
   return { forecast, history };
 }
+function formatUpdatedTime(value) {
+  if (!value) return "час невідомий";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "час невідомий";
+  return new Intl.DateTimeFormat("uk-UA", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Kyiv" }).format(date);
+}
+function readFavorites() { try { const v = JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]"); return Array.isArray(v) ? v : []; } catch (_) { return []; } }
+function renderFavorites() {
+  const host = document.getElementById("favorite-districts"); if (!host) return;
+  const items = readFavorites(); host.innerHTML = items.map((x,i) => `<button class="favorite-chip" type="button" data-favorite-index="${i}">${escapeHtml(x.name)} ×</button>`).join("");
+  host.querySelectorAll("[data-favorite-index]").forEach(btn => btn.addEventListener("click", () => {
+    const item = readFavorites()[Number(btn.dataset.favoriteIndex)]; if (!item) return;
+    const found = districtItems.find(d => normalize(prettyDistrictName(d.feature)) === normalize(item.name));
+    if (found) { const c = centerOf(found.feature); if (c) map.setView(c, Math.max(map.getZoom(), 7)); void openWeatherPanel(found); }
+  }));
+}
+function addSafetyLinks(name) {
+  return `<section class="safety-section"><h2>Офіційні повідомлення та допомога</h2><p class="muted">Перевіряйте актуальність повідомлень у першоджерелах. На цій карті немає підтвердженого автоматичного статусу проїзду доріг.</p><div class="safety-links"><a href="https://dsns.gov.ua/" target="_blank" rel="noopener noreferrer">ДСНС України ↗</a><a href="https://www.facebook.com/MNS.GOV.UA/" target="_blank" rel="noopener noreferrer">Офіційні повідомлення ДСНС ↗</a><a href="https://restoration.gov.ua/" target="_blank" rel="noopener noreferrer">Агентство відновлення · дороги ↗</a><a href="https://nezlamnist.gov.ua/" target="_blank" rel="noopener noreferrer">Пункти незламності ↗</a><a href="https://ukraine.ua/" target="_blank" rel="noopener noreferrer">Офіційний портал України ↗</a></div><p class="small-note">Для екстреної допомоги в Україні: 112 (єдиний номер, де доступний), 101 — рятувальники, 102 — поліція, 103 — швидка.</p></section>`;
+}
 function renderWeatherData(data, target, prefix = "") {
   if (!data?.forecast?.current) { target.innerHTML = `<p class="muted">Погода: невідомо. Спробуйте ще раз пізніше.</p>`; return; }
   const c = data.forecast.current, d = data.forecast.daily || {};
@@ -295,7 +316,7 @@ function renderWeatherData(data, target, prefix = "") {
   const wind = Number.isFinite(c.wind_speed_10m) ? `${Math.round(c.wind_speed_10m)} км/год` : "невідомо";
   const feels = Number.isFinite(c.apparent_temperature) ? `${Math.round(c.apparent_temperature)}°C` : "невідомо";
   const humidity = Number.isFinite(c.relative_humidity_2m) ? `${Math.round(c.relative_humidity_2m)}%` : "невідомо";
-  let html = `<section class="weather-current"><div class="temperature">${temp}</div><div class="condition">${escapeHtml(weatherCondition(c.weather_code))}</div><div class="weather-stats"><div class="weather-stat"><span>Відчувається як</span><strong>${feels}</strong></div><div class="weather-stat"><span>Вітер</span><strong>${wind}</strong></div><div class="weather-stat"><span>Вологість</span><strong>${humidity}</strong></div><div class="weather-stat"><span>Оновлено</span><strong>зараз</strong></div></div></section>`;
+  let html = `<section class="weather-current"><div class="temperature">${temp}</div><div class="condition">${escapeHtml(weatherCondition(c.weather_code))}</div><div class="weather-stats"><div class="weather-stat"><span>Відчувається як</span><strong>${feels}</strong></div><div class="weather-stat"><span>Вітер</span><strong>${wind}</strong></div><div class="weather-stat"><span>Вологість</span><strong>${humidity}</strong></div><div class="weather-stat"><span>Дані оновлено</span><strong>${escapeHtml(formatUpdatedTime(c.time))}</strong></div></div></section>`;
   html += `<h2>Прогноз на 4 дні</h2><div class="history-list">`;
   if (Array.isArray(d.time)) d.time.forEach((day, i) => { html += `<div class="history-row"><div><div>${escapeHtml(formatDateUk(day))}</div><div class="date">${escapeHtml(weatherCondition(d.weather_code?.[i]))}</div></div><strong>${Number.isFinite(d.temperature_2m_max?.[i]) ? Math.round(d.temperature_2m_max[i]) : "—"}° / ${Number.isFinite(d.temperature_2m_min?.[i]) ? Math.round(d.temperature_2m_min[i]) : "—"}°</strong></div>`; });
   html += `</div><h2>Історія погоди · 7 днів</h2><div class="history-list">`;
@@ -394,13 +415,16 @@ async function showSettlementWeather(place, box) {
 async function openWeatherPanel(item) {
   const panel = document.getElementById("weather-panel"), content = document.getElementById("panel-content");
   const name = prettyDistrictName(item.feature);
+  currentPanelItem = item;
   panel.hidden = false;
+  const favoriteButton = document.getElementById("district-favorite");
+  if (favoriteButton) favoriteButton.textContent = readFavorites().some(x => normalize(x.name) === normalize(name)) ? "★ Збережено" : "☆ Зберегти район";
   document.getElementById("panel-title").textContent = name;
   const seq = ++panelRequestSequence;
   content.innerHTML = `<p class="muted">Завантаження погоди та населених пунктів району…</p>`;
   const center = centerOf(item.feature);
   let places = [];
-  let placesHtml = `<h2>Населені пункти району</h2>`;
+  let placesHtml = addSafetyLinks(name) + `<h2>Населені пункти району</h2>`;
   try {
     places = await settlementsForDistrict(item.feature);
     if (seq !== panelRequestSequence) return;
@@ -430,6 +454,16 @@ async function openWeatherPanel(item) {
 }
 
 function init() {
+  renderFavorites();
+  document.getElementById("district-favorite")?.addEventListener("click", () => {
+    if (!currentPanelItem) return;
+    const name = prettyDistrictName(currentPanelItem.feature); let items = readFavorites();
+    if (items.some(x => normalize(x.name) === normalize(name))) items = items.filter(x => normalize(x.name) !== normalize(name));
+    else items.push({ name });
+    try { localStorage.setItem(FAVORITES_KEY, JSON.stringify(items)); } catch (_) {}
+    renderFavorites();
+    const b = document.getElementById("district-favorite"); if (b) b.textContent = items.some(x => normalize(x.name) === normalize(name)) ? "★ Збережено" : "☆ Зберегти район";
+  });
   document.getElementById("panel-close").addEventListener("click", () => { document.getElementById("weather-panel").hidden = true; panelRequestSequence++; });
   document.addEventListener("keydown", e => { if (e.key === "Escape") { document.getElementById("weather-panel").hidden = true; panelRequestSequence++; } });
   map = L.map("map", { zoomControl: false, attributionControl: false, scrollWheelZoom: true, doubleClickZoom: true, preferCanvas: false }).setView([48.8, 31.2], 6);

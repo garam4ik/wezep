@@ -73,3 +73,14 @@ body { font-family: Arial, sans-serif; }
 /* WezeraApp title, fixed to the upper-left corner */
 .wezeraapp-title { position: fixed; z-index: 10500; top: 16px; left: 18px; margin: 0; padding: 8px 12px; color: #f4f6f8; background: rgba(0,0,0,.82); border: 1px solid #252b35; border-radius: 6px; font: 700 20px/1 Arial, sans-serif; letter-spacing: .04em; pointer-events: none; }
 @media (max-width: 600px) { .wezeraapp-title { top: 10px; left: 10px; font-size: 17px; padding: 7px 9px; } }
+
+/* Safety resources and saved districts */
+.panel-tools { padding: 10px 18px 0; background: #20252b; }
+.tool-button, .favorite-chip { color: #f3f4f6; background: #292f36; border: 1px solid #4b5562; border-radius: 8px; padding: 8px 10px; cursor: pointer; }
+.favorite-districts { display:flex; flex-wrap:wrap; gap:6px; padding-top:7px; }
+.favorite-chip { font-size:12px; }
+.safety-section { border:1px solid #65504a; border-radius:10px; background:#251f20; padding:12px; margin:0 0 18px; }
+.safety-section h2 { margin-top:0 !important; }
+.safety-links { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.safety-links a { display:block; color:#f4d4d4; background:#34292b; border:1px solid #594044; border-radius:8px; padding:10px; font-size:12px; text-decoration:none; }
+.safety-links a:hover { background:#493437; }
