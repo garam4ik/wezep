@@ -116,3 +116,20 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 400; pointer-even
 body.aurora-mode::after { opacity: 1; animation: aurora-drift 9s ease-in-out infinite alternate; }
 @keyframes aurora-drift { 0% { filter: hue-rotate(0deg); transform: translateX(-1.5%) scale(1.02); } 100% { filter: hue-rotate(28deg); transform: translateX(1.5%) scale(1.06); } }
 @media (prefers-reduced-motion: reduce) { body.aurora-mode::after { animation: none; } }
+
+
+/* v14: compact toggleable temperature legend */
+#legend-toggle { border-color: #46718b !important; color: #d7f1ff !important; }
+.temperature-legend { position: fixed; z-index: 1200; left: 14px; top: 76px; width: min(310px, calc(100vw - 28px)); padding: 14px 15px; color: #f5f9ff; background: rgba(5, 16, 31, .94); border: 1px solid rgba(137, 201, 239, .65); border-radius: 12px; box-shadow: 0 10px 32px rgba(0,0,0,.28), 0 0 20px rgba(66,165,245,.12); backdrop-filter: blur(12px); }
+.temperature-legend[hidden] { display: none; }
+.legend-heading { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+.legend-gradient { height: 12px; border-radius: 99px; background: linear-gradient(90deg, #68b1ff 0%, #97d3ff 25%, #d7f0ff 42%, #f3e6a1 60%, #e84a43 82%, #5c0012 100%); border: 1px solid rgba(255,255,255,.35); }
+.legend-labels { display: flex; justify-content: space-between; gap: 4px; margin-top: 7px; font-size: 10px; color: #dce8f5; }
+.temperature-legend p { margin: 10px 0 0; color: #aebfd1; font-size: 11px; line-height: 1.4; }
+@media (max-width: 600px) { .temperature-legend { top: auto; bottom: 76px; left: 10px; } }
+
+/* v15: decorative snowfall overlay; pointer-events keeps the map fully interactive. */
+.snow-overlay { position: fixed; inset: 0; z-index: 9000; pointer-events: none; overflow: hidden; background-image: radial-gradient(3px 3px at 20px 30px, #ffffffd9 98%, transparent), radial-gradient(2px 2px at 80px 110px, #ffffffc9 98%, transparent), radial-gradient(2px 2px at 140px 70px, #ffffffbf 98%, transparent), radial-gradient(3px 3px at 190px 160px, #ffffffd0 98%, transparent); background-size: 220px 220px; animation: wezera-snowfall 8s linear infinite; }
+.snow-overlay[hidden] { display: none !important; }
+@keyframes wezera-snowfall { from { background-position: 0 -220px; } to { background-position: 0 220px; } }
+@media (prefers-reduced-motion: reduce) { .snow-overlay { animation: none; } }

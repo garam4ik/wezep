@@ -574,6 +574,51 @@ function init() {
   map = L.map("map", { zoomControl: false, attributionControl: false, scrollWheelZoom: true, doubleClickZoom: true, preferCanvas: false }).setView([48.8, 31.2], 6);
   const status = document.getElementById("map-action-status");
   const showMapStatus = message => { if (!status) return; status.textContent = message; status.hidden = false; window.clearTimeout(showMapStatus.timer); showMapStatus.timer = window.setTimeout(() => { status.hidden = true; }, 5000); };
+  // v15 extras: snowfall overlay, shareable map view, and fullscreen mode.
+  const snowButton = document.getElementById("snow-toggle");
+  const snowOverlay = document.getElementById("snow-overlay");
+  snowButton?.addEventListener("click", () => {
+    const enabled = snowOverlay.hidden;
+    snowOverlay.hidden = !enabled;
+    snowButton.setAttribute("aria-pressed", String(enabled));
+    snowButton.innerHTML = enabled ? '❄ <span>Вимкнути сніг</span>' : '❄ <span>Снігопад</span>';
+    showMapStatus(enabled ? "Зимовий снігопад увімкнено." : "Снігопад вимкнено.");
+  });
+  document.getElementById("share-map")?.addEventListener("click", async () => {
+    const center = map.getCenter();
+    const url = new URL(window.location.href);
+    url.searchParams.set("lat", center.lat.toFixed(4));
+    url.searchParams.set("lng", center.lng.toFixed(4));
+    url.searchParams.set("zoom", String(map.getZoom()));
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url.toString());
+        showMapStatus("Посилання на цей вигляд карти скопійовано.");
+      } else {
+        window.prompt("Скопіюйте посилання на карту:", url.toString());
+      }
+    } catch (_) { window.prompt("Скопіюйте посилання на карту:", url.toString()); }
+  });
+  const fullscreenButton = document.getElementById("fullscreen-toggle");
+  fullscreenButton?.addEventListener("click", async () => {
+    try {
+      if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+      else await document.exitFullscreen();
+    } catch (_) { showMapStatus("Повноекранний режим недоступний у цьому браузері."); }
+  });
+  document.addEventListener("fullscreenchange", () => {
+    if (fullscreenButton) fullscreenButton.innerHTML = document.fullscreenElement ? '⛶ <span>Вийти з повного екрана</span>' : '⛶ <span>На весь екран</span>';
+    setTimeout(() => map.invalidateSize(), 100);
+  });
+  // Restore a shared map view from URL parameters, when present.
+  const sharedParams = new URLSearchParams(window.location.search);
+  const sharedLat = Number(sharedParams.get("lat"));
+  const sharedLng = Number(sharedParams.get("lng"));
+  const sharedZoom = Number(sharedParams.get("zoom"));
+  if (Number.isFinite(sharedLat) && Number.isFinite(sharedLng) && sharedParams.has("lat") && sharedParams.has("lng") && sharedLat >= -90 && sharedLat <= 90 && sharedLng >= -180 && sharedLng <= 180) {
+    map.setView([sharedLat, sharedLng], Number.isFinite(sharedZoom) ? Math.max(3, Math.min(18, sharedZoom)) : 6);
+  }
+
   document.getElementById("map-home")?.addEventListener("click", () => {
     if (fullMapBounds?.isValid()) map.fitBounds(fullMapBounds, { padding: [16, 16], animate: true });
     else map.setView([48.8, 31.2], 6);
@@ -673,3 +718,17 @@ window.addEventListener("load", () => {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initWhatsNew);
   else initWhatsNew();
 })();
+
+
+// v14: toggleable temperature legend; purely informational and does not alter map data.
+document.addEventListener("DOMContentLoaded", () => {
+  const button = document.getElementById("legend-toggle");
+  const legend = document.getElementById("temperature-legend");
+  if (!button || !legend) return;
+  button.addEventListener("click", () => {
+    const open = legend.hidden;
+    legend.hidden = !open;
+    button.setAttribute("aria-expanded", String(open));
+    button.innerHTML = open ? '🌡 <span>Сховати шкалу</span>' : '🌡 <span>Шкала температур</span>';
+  });
+});

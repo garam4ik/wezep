@@ -13,6 +13,7 @@
 <body>
   <h1 class="wezeraapp-title">WezeraApp</h1>
   <main id="map" aria-label="Інтерактивна карта адміністративних меж України"></main>
+  <div id="snow-overlay" class="snow-overlay" aria-hidden="true" hidden></div>
   <div id="district-tooltip" class="district-tooltip" role="status" aria-live="polite" hidden></div>
   <aside id="weather-panel" class="weather-panel" aria-labelledby="panel-title" hidden>
     <header class="panel-header">
@@ -26,8 +27,18 @@
     <button id="map-home" type="button" title="Показати всю карту" aria-label="Показати всю карту">⌂ <span>Уся карта</span></button>
     <button id="map-locate" type="button" title="Знайти моє місце" aria-label="Знайти моє місце">◎ <span>Моє місце</span></button>
     <button id="aurora-toggle" type="button" aria-pressed="false" title="Увімкнути декоративне північне сяйво">✧ <span>Північне сяйво</span></button>
+    <button id="legend-toggle" type="button" aria-expanded="false" aria-controls="temperature-legend">🌡 <span>Шкала температур</span></button>
+    <button id="snow-toggle" type="button" aria-pressed="false" title="Увімкнути снігопад">❄ <span>Снігопад</span></button>
+    <button id="share-map" type="button" title="Скопіювати посилання на цей вигляд карти">↗ <span>Поділитися картою</span></button>
+    <button id="fullscreen-toggle" type="button" title="На весь екран">⛶ <span>На весь екран</span></button>
     <p id="map-action-status" role="status" aria-live="polite" hidden></p>
   </nav>
+  <aside id="temperature-legend" class="temperature-legend" hidden aria-label="Шкала температури">
+    <div class="legend-heading">🌡 Шкала температур</div>
+    <div class="legend-gradient"></div>
+    <div class="legend-labels"><span>−15 °C</span><span>0 °C</span><span>+10 °C</span><span>+20 °C</span><span>+30 °C</span></div>
+    <p>Від холодного блакитного до теплого червоного.</p>
+  </aside>
   <div id="map-loading" role="status">Завантаження меж карти…</div>
   <section id="whats-new" class="whats-new" role="dialog" aria-modal="true" aria-labelledby="whats-new-title" hidden>
     <div class="whats-new-card">
