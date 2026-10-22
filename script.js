@@ -253,6 +253,45 @@ function prettyDistrictName(feature) {
   if (!/район/i.test(name)) name += " район";
   return name;
 }
+function formatOblastLabel(rawName) {
+  let name = String(rawName || "Область").trim().replace(/^м\.\s*/i, "м. ");
+  // Normalize source variants from GeoJSON (Ukrainian, Russian, English).
+  name = name.replace(/\s*(область|обл\.|oblast|region)\s*$/i, "").trim();
+  const key = name.toLocaleLowerCase("uk-UA").replace(/[’'`]/g, "").replace(/\s+/g, " ").trim();
+  const names = {
+    "винницкая":"Вінницька", "вінницька":"Вінницька", "vinnytsia":"Вінницька", "vinnitsa":"Вінницька", "vinnytska":"Вінницька",
+    "волынская":"Волинська", "волинська":"Волинська", "volyn":"Волинська", "volynska":"Волинська",
+    "днепропетровская":"Дніпропетровська", "дніпропетровська":"Дніпропетровська", "dnipropetrovsk":"Дніпропетровська", "dnipropetrovska":"Дніпропетровська", "dnepropetrovsk":"Дніпропетровська",
+    "донецкая":"Донецька", "донецька":"Донецька", "donetsk":"Донецька", "donetska":"Донецька",
+    "житомирская":"Житомирська", "житомирська":"Житомирська", "zhytomyr":"Житомирська", "zhytomyrska":"Житомирська",
+    "закарпатская":"Закарпатська", "закарпатська":"Закарпатська", "zakarpattia":"Закарпатська", "zakarpatska":"Закарпатська", "transcarpathia":"Закарпатська",
+    "запорожская":"Запорізька", "запорізька":"Запорізька", "zaporizhzhia":"Запорізька", "zaporizhzhya":"Запорізька", "zaporozhye":"Запорізька", "zaporizka":"Запорізька",
+    "ивано франковская":"Івано-Франківська", "івано франківська":"Івано-Франківська", "івано-франківська":"Івано-Франківська", "ivano frankivsk":"Івано-Франківська", "ivano-frankivsk":"Івано-Франківська", "ivano frankivska":"Івано-Франківська",
+    "киевская":"Київська", "київська":"Київська", "kyiv":"Київська", "kyivska":"Київська", "kiev":"Київська",
+    "кировоградская":"Кіровоградська", "кіровоградська":"Кіровоградська", "kirovohrad":"Кіровоградська", "kirovohradska":"Кіровоградська", "kirovograd":"Кіровоградська",
+    "луганская":"Луганська", "луганська":"Луганська", "luhansk":"Луганська", "luhanska":"Луганська", "lugansk":"Луганська",
+    "львовская":"Львівська", "львівська":"Львівська", "lviv":"Львівська", "lvivska":"Львівська", "lvov":"Львівська",
+    "николаевская":"Миколаївська", "миколаївська":"Миколаївська", "mykolaiv":"Миколаївська", "mykolaivska":"Миколаївська", "nikolaev":"Миколаївська",
+    "одесская":"Одеська", "одеська":"Одеська", "odesa":"Одеська", "odesa oblast":"Одеська", "odeska":"Одеська", "odessa":"Одеська",
+    "полтавская":"Полтавська", "полтавська":"Полтавська", "poltava":"Полтавська", "poltavska":"Полтавська",
+    "ровенская":"Рівненська", "рівненська":"Рівненська", "rivne":"Рівненська", "rivnenska":"Рівненська", "rovno":"Рівненська",
+    "сумская":"Сумська", "сумська":"Сумська", "sumy":"Сумська", "sumska":"Сумська",
+    "тернопольская":"Тернопільська", "тернопільська":"Тернопільська", "ternopil":"Тернопільська", "ternopilska":"Тернопільська",
+    "харьковская":"Харківська", "харківська":"Харківська", "kharkiv":"Харківська", "kharkivska":"Харківська", "kharkov":"Харківська",
+    "херсонская":"Херсонська", "херсонська":"Херсонська", "kherson":"Херсонська", "khersonska":"Херсонська",
+    "хмельницкая":"Хмельницька", "хмельницька":"Хмельницька", "khmelnytskyi":"Хмельницька", "khmelnytska":"Хмельницька", "khmelnitsky":"Хмельницька",
+    "черкасская":"Черкаська", "черкаська":"Черкаська", "cherkasy":"Черкаська", "cherkaska":"Черкаська", "cherkassy":"Черкаська",
+    "черниговская":"Чернігівська", "чернігівська":"Чернігівська", "chernihiv":"Чернігівська", "chernihivska":"Чернігівська", "chernigov":"Чернігівська",
+    "черновицкая":"Чернівецька", "чернівецька":"Чернівецька", "chernivtsi":"Чернівецька", "chernivetska":"Чернівецька", "chernovtsy":"Чернівецька",
+    "крым":"АР Крим", "крим":"АР Крим", "crimea":"АР Крим", "autonomous republic of crimea":"АР Крим", "автономна республіка крим":"АР Крим",
+    "севастополь":"Севастополь", "sevastopol":"Севастополь"
+  };
+  if (names[key]) return names[key];
+  // Preserve correct Ukrainian adjectival labels without duplicating suffixes.
+  const ukrainian = name.replace(/\s+/g, " ").trim();
+  if (/ська$|цька$|зька$|івська$|ївська$|ська$/i.test(ukrainian)) return ukrainian;
+  return ukrainian || "Область";
+}
 function addOblastLabels() {
   const pane = map.createPane("oblastLabelsPane");
   pane.style.zIndex = 650;
@@ -262,10 +301,7 @@ function addOblastLabels() {
   for (const feature of oblastFeatures) {
     const center = centerOf(feature);
     if (!center) continue;
-    const name = getName(feature, "oblast")
-      .replace(/ область$/i, "ська")
-      .replace(/ область/i, "ська")
-      .replace(/^м\.\s*/i, "м. ");
+    const name = formatOblastLabel(getName(feature, "oblast"));
     const icon = L.divIcon({ className: "oblast-label-icon", html: `<div class="oblast-label">${escapeHtml(name)}</div>`, iconSize: [140, 22], iconAnchor: [70, 11] });
     const marker = L.marker(center, { icon, pane: "oblastLabelsPane", interactive: false, keyboard: false });
     marker.addTo(map);
