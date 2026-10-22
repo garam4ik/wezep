@@ -25,6 +25,8 @@ const weatherPending = new Map();
 const featureNames = new WeakMap();
 let settlementsPromise = null;
 let settlementsData = null;
+let fullMapBounds = null;
+let userLocationMarker = null;
 const districtTooltip = () => document.getElementById("district-tooltip");
 
 function propsOf(feature) { return feature?.properties || {}; }
@@ -467,6 +469,27 @@ function init() {
   document.getElementById("panel-close").addEventListener("click", () => { document.getElementById("weather-panel").hidden = true; panelRequestSequence++; });
   document.addEventListener("keydown", e => { if (e.key === "Escape") { document.getElementById("weather-panel").hidden = true; panelRequestSequence++; } });
   map = L.map("map", { zoomControl: false, attributionControl: false, scrollWheelZoom: true, doubleClickZoom: true, preferCanvas: false }).setView([48.8, 31.2], 6);
+  const status = document.getElementById("map-action-status");
+  const showMapStatus = message => { if (!status) return; status.textContent = message; status.hidden = false; window.clearTimeout(showMapStatus.timer); showMapStatus.timer = window.setTimeout(() => { status.hidden = true; }, 5000); };
+  document.getElementById("map-home")?.addEventListener("click", () => {
+    if (fullMapBounds?.isValid()) map.fitBounds(fullMapBounds, { padding: [16, 16], animate: true });
+    else map.setView([48.8, 31.2], 6);
+    showMapStatus("Показано загальний огляд карти.");
+  });
+  document.getElementById("map-locate")?.addEventListener("click", () => {
+    if (!navigator.geolocation) { showMapStatus("Ваш браузер не підтримує визначення місця."); return; }
+    showMapStatus("Очікуємо дозвіл браузера на визначення місця…");
+    navigator.geolocation.getCurrentPosition(position => {
+      const latlng = [position.coords.latitude, position.coords.longitude];
+      map.setView(latlng, Math.max(map.getZoom(), 8), { animate: true });
+      if (userLocationMarker) userLocationMarker.setLatLng(latlng);
+      else userLocationMarker = L.circleMarker(latlng, { radius: 8, color: "#fff", weight: 3, fillColor: "#2f80ed", fillOpacity: 1 }).addTo(map).bindTooltip("Ваше місце", { direction: "top" });
+      showMapStatus("Місце показано. Координати не зберігаються сайтом.");
+    }, error => {
+      const message = error.code === 1 ? "Дозвольте доступ до місця у налаштуваннях браузера." : error.code === 2 ? "Не вдалося визначити місце. Перевірте GPS або мережу." : "Час очікування геолокації минув. Спробуйте ще раз.";
+      showMapStatus(message);
+    }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 });
+  });
   map.createPane("oblastPane");
   map.getPane("oblastPane").style.zIndex = 430;
   map.getPane("overlayPane").style.zIndex = 410;
@@ -490,7 +513,7 @@ function init() {
     L.geoJSON({ ...oblasts, features: oblastFeatures }, { pane: "oblastPane", interactive: false, style: feature => ({ color: "#252b35", weight: 0.9, opacity: 1, fill: false }) }).addTo(map);
     addOblastLabels();
     const bounds = districtLayer.getBounds();
-    if (bounds.isValid()) map.fitBounds(bounds, { padding: [12, 12] });
+    if (bounds.isValid()) { fullMapBounds = bounds; map.fitBounds(bounds, { padding: [12, 12] }); }
     document.getElementById("map-loading").hidden = true;
     setTimeout(() => map.invalidateSize(), 100);
   }).catch(error => {
@@ -512,7 +535,7 @@ window.addEventListener("load", () => {
     const modal = document.getElementById("whats-new");
     const ok = document.getElementById("whats-new-ok");
     if (!modal || !ok) return;
-    let notes = { version: "2026-10-22-1", title: "Що нового?", items: [] };
+    let notes = { version: "2026-10-22-4", title: "Що нового?", items: [] };
     try {
       const response = await fetch("release-notes.json", { cache: "no-store" });
       if (response.ok) notes = await response.json();

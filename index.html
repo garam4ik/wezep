@@ -22,17 +22,22 @@
     <div class="panel-tools"><button id="district-favorite" type="button" class="tool-button">☆ Зберегти район</button><div id="favorite-districts" class="favorite-districts" aria-label="Збережені райони"></div></div>
     <div id="panel-content" class="panel-content"><p class="muted">Завантаження погоди…</p></div>
   </aside>
+  <nav class="map-quick-actions" aria-label="Керування картою">
+    <button id="map-home" type="button" title="Показати всю карту" aria-label="Показати всю карту">⌂ <span>Уся карта</span></button>
+    <button id="map-locate" type="button" title="Знайти моє місце" aria-label="Знайти моє місце">◎ <span>Моє місце</span></button>
+    <p id="map-action-status" role="status" aria-live="polite" hidden></p>
+  </nav>
   <div id="map-loading" role="status">Завантаження меж карти…</div>
   <section id="whats-new" class="whats-new" role="dialog" aria-modal="true" aria-labelledby="whats-new-title" hidden>
     <div class="whats-new-card">
       <div class="whats-new-kicker">WEZERAAPP · ОНОВЛЕННЯ</div>
       <h2 id="whats-new-title">Що нового?</h2>
       <ul id="whats-new-list">
-        <li>Додано офіційні посилання з безпеки та дорожньої інформації в панелі району.</li>
-        <li>Додано можливість зберігати важливі райони в обраному браузері.</li>
-        <li>Пошук населених пунктів у карті збережено.</li>
-        <li>Час оновлення погоди показується за даними погодного сервісу.</li>
-        <li>Збережено попередні налаштування карти та меж районів.</li>
+        <li>Нова кнопка «Уся карта» повертає огляд усіх доступних районів.</li>
+        <li>Кнопка «Моє місце» може показати ваше місце на карті після дозволу браузера.</li>
+        <li>Додано зрозумілі повідомлення про результат пошуку місця та помилки геолокації.</li>
+        <li>Збережено обрані райони, пошук населених пунктів і погодну панель.</li>
+        <li>Оновлено вікно «Що нового?» для цього випуску.</li>
       </ul>
       <button id="whats-new-ok" type="button">ОК, зрозуміло</button>
     </div>

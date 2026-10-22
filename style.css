@@ -84,3 +84,13 @@ body { font-family: Arial, sans-serif; }
 .safety-links { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .safety-links a { display:block; color:#f4d4d4; background:#34292b; border:1px solid #594044; border-radius:8px; padding:10px; font-size:12px; text-decoration:none; }
 .safety-links a:hover { background:#493437; }
+
+
+/* Quick map actions: home view and optional browser geolocation */
+.map-quick-actions { position: fixed; z-index: 10500; left: 18px; bottom: 18px; display: flex; flex-direction: column; gap: 8px; max-width: calc(100vw - 36px); }
+.map-quick-actions button { display: flex; align-items: center; gap: 9px; min-height: 42px; padding: 9px 13px; color: #f4f6f8; background: rgba(13,16,21,.94); border: 1px solid #596273; border-radius: 10px; font: 600 13px/1 Arial,sans-serif; cursor: pointer; box-shadow: 0 3px 14px rgba(0,0,0,.35); }
+.map-quick-actions button:first-letter { font-size: 20px; }
+.map-quick-actions button:hover, .map-quick-actions button:focus-visible { background: #293342; border-color: #aebbd0; outline: 2px solid transparent; }
+#map-action-status { margin: 0; padding: 10px 12px; max-width: 290px; color: #f4f6f8; background: rgba(13,16,21,.96); border: 1px solid #596273; border-radius: 8px; font-size: 12px; line-height: 1.45; }
+#map-action-status[hidden] { display:none; }
+@media (max-width: 600px) { .map-quick-actions { left: 10px; bottom: 10px; gap: 6px; } .map-quick-actions button { min-height: 40px; padding: 9px 11px; } }
