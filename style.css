@@ -107,3 +107,12 @@ body { font-family: Arial, sans-serif; }
 #refresh-weather { border-color: #3c647d; }
 #refresh-weather:disabled { opacity: .65; cursor: wait; }
 @media (max-width: 420px) { .hourly-row { grid-template-columns: 42px minmax(0,1fr) 32px; } .hourly-rain { grid-column: 2 / 4; } }
+
+
+/* v11: optional decorative aurora overlay; never blocks map interaction */
+#aurora-toggle { border-color: #376b8e !important; color: #b8e8ff !important; }
+#aurora-toggle[aria-pressed="true"] { background: #16374b !important; box-shadow: 0 0 16px rgba(76,190,255,.28); }
+body::after { content: ""; position: fixed; inset: 0; z-index: 400; pointer-events: none; opacity: 0; transition: opacity .7s ease; background: radial-gradient(ellipse at 18% 8%, rgba(30,210,180,.17), transparent 42%), radial-gradient(ellipse at 70% 0%, rgba(65,130,255,.19), transparent 43%), radial-gradient(ellipse at 48% 30%, rgba(100,70,220,.10), transparent 48%); mix-blend-mode: screen; }
+body.aurora-mode::after { opacity: 1; animation: aurora-drift 9s ease-in-out infinite alternate; }
+@keyframes aurora-drift { 0% { filter: hue-rotate(0deg); transform: translateX(-1.5%) scale(1.02); } 100% { filter: hue-rotate(28deg); transform: translateX(1.5%) scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { body.aurora-mode::after { animation: none; } }

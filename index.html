@@ -25,6 +25,7 @@
   <nav class="map-quick-actions" aria-label="Керування картою">
     <button id="map-home" type="button" title="Показати всю карту" aria-label="Показати всю карту">⌂ <span>Уся карта</span></button>
     <button id="map-locate" type="button" title="Знайти моє місце" aria-label="Знайти моє місце">◎ <span>Моє місце</span></button>
+    <button id="aurora-toggle" type="button" aria-pressed="false" title="Увімкнути декоративне північне сяйво">✧ <span>Північне сяйво</span></button>
     <p id="map-action-status" role="status" aria-live="polite" hidden></p>
   </nav>
   <div id="map-loading" role="status">Завантаження меж карти…</div>
@@ -41,9 +42,13 @@
         <li>Додано кнопку ручного оновлення погоди в панелі району.</li>
         <li>Назва WezeraApp тепер світло-блакитна, зі сніжинками з обох боків і м’яким синім підсвічуванням.</li>
         <li>Збережено інтерактивну карту, вибір районів і погодну панель.</li>
+        <li>Додано режим «Північне сяйво» — м’яку анімовану підсвітку карти, яку можна ввімкнути або вимкнути.</li>
       </ul>
       <button id="whats-new-ok" type="button">ОК, зрозуміло</button>
     </div>
   </section>
+<script>
+  (() => { const button = document.getElementById("aurora-toggle"); if (!button) return; button.addEventListener("click", () => { const enabled = document.body.classList.toggle("aurora-mode"); button.setAttribute("aria-pressed", String(enabled)); button.innerHTML = enabled ? '✦ <span>Вимкнути сяйво</span>' : '✧ <span>Північне сяйво</span>'; }); })();
+</script>
 </body>
 </html>
