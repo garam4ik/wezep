@@ -160,7 +160,7 @@ function baseStyle(feature) {
   const temp = item ? districtTemperatures.get(item) : null;
   // Якщо температура ще завантажується — залишаємо нейтральний колір.
   const fillColor = Number.isFinite(temp) ? temperatureColor(temp) : "#3b414d";
-  return { color: "#f4f7fb", weight: 1.35, opacity: 0.9, fillColor, fillOpacity: 1 };
+  return { color: "#252b35", weight: 0.9, opacity: 1, fillColor, fillOpacity: 1 };
 }
 function activeStyle(item) {
   const temp = districtTemperatures.get(item);
@@ -662,14 +662,14 @@ function init() {
     const filteredRaions = { ...raions, features: includedRaions };
     const districtLayer = L.geoJSON(filteredRaions, { style: baseStyle, onEachFeature: bindDistrict }).addTo(map);
     districtItems.forEach(item => { item.oblast = findOblastForDistrict(item.feature); item.layer.setStyle(baseStyle(item.oblast || item.feature)); });
-    // v22: clear administrative oblast outlines and labels over dark satellite background; labels show names only, not weather.
+    // Ukrainian flag-inspired luminous outline: blue above, yellow below.
     const outlineData = { ...oblasts, features: oblastFeatures };
     const flagGlowPane = map.createPane("flagGlowPane");
     flagGlowPane.style.zIndex = 420;
     flagGlowPane.style.pointerEvents = "none";
-    L.geoJSON(outlineData, { pane: "flagGlowPane", interactive: false, style: () => ({ color: "#ffd83d", weight: 4, opacity: 0.92, fill: false, lineCap: "round", lineJoin: "round" }) }).addTo(map);
-    L.geoJSON(outlineData, { pane: "flagGlowPane", interactive: false, style: () => ({ color: "#55aaff", weight: 2, opacity: 1, fill: false, lineCap: "round", lineJoin: "round" }) }).addTo(map);
-    L.geoJSON(outlineData, { pane: "oblastPane", interactive: false, style: () => ({ color: "#f4f7fb", weight: 1.35, opacity: 0.9, fill: false }) }).addTo(map);
+    L.geoJSON(outlineData, { pane: "flagGlowPane", interactive: false, style: () => ({ color: "#ffd83d", weight: 5, opacity: 0.72, fill: false, lineCap: "round", lineJoin: "round" }) }).addTo(map);
+    L.geoJSON(outlineData, { pane: "flagGlowPane", interactive: false, style: () => ({ color: "#238cff", weight: 3, opacity: 0.98, fill: false, lineCap: "round", lineJoin: "round" }) }).addTo(map);
+    L.geoJSON(outlineData, { pane: "oblastPane", interactive: false, style: () => ({ color: "#252b35", weight: 0.9, opacity: 1, fill: false }) }).addTo(map);
     addOblastLabels();
     void loadDistrictTemperatureColors();
     const bounds = districtLayer.getBounds();
