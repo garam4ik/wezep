@@ -612,8 +612,14 @@ function init() {
     const filteredRaions = { ...raions, features: includedRaions };
     const districtLayer = L.geoJSON(filteredRaions, { style: baseStyle, onEachFeature: bindDistrict }).addTo(map);
     districtItems.forEach(item => { item.oblast = findOblastForDistrict(item.feature); item.layer.setStyle(baseStyle(item.oblast || item.feature)); });
-    // Draw only oblast boundaries that remain on the map.
-    L.geoJSON({ ...oblasts, features: oblastFeatures }, { pane: "oblastPane", interactive: false, style: feature => ({ color: "#252b35", weight: 0.9, opacity: 1, fill: false }) }).addTo(map);
+    // Ukrainian flag-inspired luminous outline: blue above, yellow below.
+    const outlineData = { ...oblasts, features: oblastFeatures };
+    const flagGlowPane = map.createPane("flagGlowPane");
+    flagGlowPane.style.zIndex = 420;
+    flagGlowPane.style.pointerEvents = "none";
+    L.geoJSON(outlineData, { pane: "flagGlowPane", interactive: false, style: () => ({ color: "#ffd83d", weight: 5, opacity: 0.72, fill: false, lineCap: "round", lineJoin: "round" }) }).addTo(map);
+    L.geoJSON(outlineData, { pane: "flagGlowPane", interactive: false, style: () => ({ color: "#238cff", weight: 3, opacity: 0.98, fill: false, lineCap: "round", lineJoin: "round" }) }).addTo(map);
+    L.geoJSON(outlineData, { pane: "oblastPane", interactive: false, style: () => ({ color: "#252b35", weight: 0.9, opacity: 1, fill: false }) }).addTo(map);
     addOblastLabels();
     void loadDistrictTemperatureColors();
     const bounds = districtLayer.getBounds();

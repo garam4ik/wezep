@@ -1,9 +1,9 @@
 :root { color-scheme: dark; }
 * { box-sizing: border-box; }
-html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #000; }
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: linear-gradient(to bottom, #0758b8 0%, #0b2e66 42%, #5a4b27 70%, #f5c400 100%); }
 body { font-family: Arial, sans-serif; }
-#map { position: fixed; inset: 0; width: 100vw; height: 100%; height: 100dvh; min-height: 100%; background: #000; outline: none; }
-.leaflet-container { background: #000 !important; color: #fff; font-family: Arial, sans-serif; }
+#map { position: fixed; inset: 0; width: 100vw; height: 100%; height: 100dvh; min-height: 100%; background: transparent; outline: none; }
+.leaflet-container { background: transparent !important; color: #fff; font-family: Arial, sans-serif; }
 .leaflet-tile-pane, .leaflet-control-attribution, .leaflet-control-zoom { display: none !important; }
 .leaflet-overlay-pane svg { overflow: visible; }
 .leaflet-interactive { cursor: pointer; }
