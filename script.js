@@ -278,7 +278,7 @@ function formatDateUk(dateString) {
 }
 function weatherCondition(code) { return WEATHER_CODES[code] || "Невідомі умови"; }
 async function fetchWeatherAt(lat, lon, includeHistory = true) {
-  const params = new URLSearchParams({ latitude: String(lat), longitude: String(lon), current: "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m", daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max", forecast_days: "4", timezone: "Europe/Kyiv" });
+  const params = new URLSearchParams({ latitude: String(lat), longitude: String(lon), current: "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m", hourly: "temperature_2m,precipitation_probability,weather_code", forecast_hours: "24", daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max", forecast_days: "4", timezone: "Europe/Kyiv" });
   const forecastPromise = fetch(`${WEATHER_URL}?${params}`).then(r => { if (!r.ok) throw new Error("Forecast unavailable"); return r.json(); });
   let historyPromise = Promise.resolve(null);
   if (includeHistory) {
@@ -321,6 +321,22 @@ function renderWeatherData(data, target, prefix = "") {
   let html = `<section class="weather-current"><div class="temperature">${temp}</div><div class="condition">${escapeHtml(weatherCondition(c.weather_code))}</div><div class="weather-stats"><div class="weather-stat"><span>Відчувається як</span><strong>${feels}</strong></div><div class="weather-stat"><span>Вітер</span><strong>${wind}</strong></div><div class="weather-stat"><span>Вологість</span><strong>${humidity}</strong></div><div class="weather-stat"><span>Дані оновлено</span><strong>${escapeHtml(formatUpdatedTime(c.time))}</strong></div></div></section>`;
   html += `<h2>Прогноз на 4 дні</h2><div class="history-list">`;
   if (Array.isArray(d.time)) d.time.forEach((day, i) => { html += `<div class="history-row"><div><div>${escapeHtml(formatDateUk(day))}</div><div class="date">${escapeHtml(weatherCondition(d.weather_code?.[i]))}</div></div><strong>${Number.isFinite(d.temperature_2m_max?.[i]) ? Math.round(d.temperature_2m_max[i]) : "—"}° / ${Number.isFinite(d.temperature_2m_min?.[i]) ? Math.round(d.temperature_2m_min[i]) : "—"}°</strong></div>`; });
+  const hourly = data.forecast.hourly || {};
+  html += `</div><h2>Погодинний прогноз</h2><div class="hourly-list">`;
+  let shownHours = 0;
+  if (Array.isArray(hourly.time)) {
+    const now = new Date();
+    hourly.time.forEach((time, i) => {
+      const date = new Date(time);
+      if (!Number.isFinite(date.getTime()) || date < new Date(now.getTime() - 60 * 60 * 1000) || shownHours >= 8) return;
+      shownHours++;
+      const hour = new Intl.DateTimeFormat("uk-UA", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Kyiv" }).format(date);
+      const temperature = Number.isFinite(hourly.temperature_2m?.[i]) ? `${Math.round(hourly.temperature_2m[i])}°` : "—";
+      const rain = Number.isFinite(hourly.precipitation_probability?.[i]) ? `${Math.round(hourly.precipitation_probability[i])}%` : "—";
+      html += `<div class="hourly-row"><span>${escapeHtml(hour)}</span><span>${escapeHtml(weatherCondition(hourly.weather_code?.[i]))}</span><strong>${temperature}</strong><span class="hourly-rain">Опади ${rain}</span></div>`;
+    });
+  }
+  if (!shownHours) html += `<p class="muted">Погодинний прогноз тимчасово недоступний.</p>`;
   html += `</div><h2>Історія погоди · 7 днів</h2><div class="history-list">`;
   const hist = data.history?.daily;
   if (Array.isArray(hist?.time) && hist.time.length) hist.time.forEach((day, i) => { html += `<div class="history-row"><div><div>${escapeHtml(formatDateUk(day))}</div><div class="date">${escapeHtml(weatherCondition(hist.weather_code?.[i]))}${Number.isFinite(hist.precipitation_sum?.[i]) ? ` · опади ${Math.round(hist.precipitation_sum[i]*10)/10} мм` : ""}</div></div><strong>${Number.isFinite(hist.temperature_2m_max?.[i]) ? Math.round(hist.temperature_2m_max[i]) : "—"}° / ${Number.isFinite(hist.temperature_2m_min?.[i]) ? Math.round(hist.temperature_2m_min[i]) : "—"}°</strong></div>`; });
@@ -466,6 +482,14 @@ function init() {
     renderFavorites();
     const b = document.getElementById("district-favorite"); if (b) b.textContent = items.some(x => normalize(x.name) === normalize(name)) ? "★ Збережено" : "☆ Зберегти район";
   });
+  document.getElementById("refresh-weather")?.addEventListener("click", async event => {
+    if (!currentPanelItem) return;
+    const button = event.currentTarget;
+    button.disabled = true;
+    button.textContent = "↻ Оновлюємо…";
+    try { await openWeatherPanel(currentPanelItem); }
+    finally { button.disabled = false; button.textContent = "↻ Оновити погоду"; }
+  });
   document.getElementById("panel-close").addEventListener("click", () => { document.getElementById("weather-panel").hidden = true; panelRequestSequence++; });
   document.addEventListener("keydown", e => { if (e.key === "Escape") { document.getElementById("weather-panel").hidden = true; panelRequestSequence++; } });
   map = L.map("map", { zoomControl: false, attributionControl: false, scrollWheelZoom: true, doubleClickZoom: true, preferCanvas: false }).setView([48.8, 31.2], 6);
@@ -535,7 +559,7 @@ window.addEventListener("load", () => {
     const modal = document.getElementById("whats-new");
     const ok = document.getElementById("whats-new-ok");
     if (!modal || !ok) return;
-    let notes = { version: "2026-10-22-4", title: "Що нового?", items: [] };
+    let notes = { version: "2026-10-22-5", title: "Що нового?", items: [] };
     try {
       const response = await fetch("release-notes.json", { cache: "no-store" });
       if (response.ok) notes = await response.json();

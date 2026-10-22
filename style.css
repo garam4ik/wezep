@@ -94,3 +94,13 @@ body { font-family: Arial, sans-serif; }
 #map-action-status { margin: 0; padding: 10px 12px; max-width: 290px; color: #f4f6f8; background: rgba(13,16,21,.96); border: 1px solid #596273; border-radius: 8px; font-size: 12px; line-height: 1.45; }
 #map-action-status[hidden] { display:none; }
 @media (max-width: 600px) { .map-quick-actions { left: 10px; bottom: 10px; gap: 6px; } .map-quick-actions button { min-height: 40px; padding: 9px 11px; } }
+
+/* WezeraApp Plus v5: hourly forecast and refresh action */
+.hourly-list { display: grid; gap: 6px; margin: 8px 0 18px; }
+.hourly-row { display: grid; grid-template-columns: 48px minmax(0,1fr) 38px auto; gap: 8px; align-items: center; padding: 9px 10px; border: 1px solid #252b35; border-radius: 8px; background: rgba(255,255,255,.035); font-size: 12px; }
+.hourly-row > span:nth-child(2) { color: #b8c1ce; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hourly-row strong { font-size: 15px; text-align: right; }
+.hourly-rain { color: #8dcaff; white-space: nowrap; }
+#refresh-weather { border-color: #3c647d; }
+#refresh-weather:disabled { opacity: .65; cursor: wait; }
+@media (max-width: 420px) { .hourly-row { grid-template-columns: 42px minmax(0,1fr) 32px; } .hourly-rain { grid-column: 2 / 4; } }
