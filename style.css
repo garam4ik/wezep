@@ -71,7 +71,10 @@ body { font-family: Arial, sans-serif; }
 
 
 /* WezeraApp title, fixed to the upper-left corner */
-.wezeraapp-title { position: fixed; z-index: 10500; top: 16px; left: 18px; margin: 0; padding: 8px 12px; color: #f4f6f8; background: rgba(0,0,0,.82); border: 1px solid #252b35; border-radius: 6px; font: 700 20px/1 Arial, sans-serif; letter-spacing: .04em; pointer-events: none; }
+.wezeraapp-title { position: fixed; z-index: 10500; top: 16px; left: 18px; margin: 0; padding: 8px 12px; color: #8ed8ff; background: rgba(0,0,0,.86); border: 1px solid #214c70; border-radius: 8px; box-shadow: 0 0 18px rgba(55,170,255,.18); font: 700 20px/1 Arial, sans-serif; letter-spacing: .04em; pointer-events: none; }
+.wezeraapp-title::before, .wezeraapp-title::after { color: #8ed8ff; text-shadow: 0 0 8px rgba(90,190,255,.75); font-size: 1.05em; }
+.wezeraapp-title::before { content: "❄ "; }
+.wezeraapp-title::after { content: " ❄"; }
 @media (max-width: 600px) { .wezeraapp-title { top: 10px; left: 10px; font-size: 17px; padding: 7px 9px; } }
 
 /* Safety resources and saved districts */
