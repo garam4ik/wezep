@@ -139,4 +139,23 @@ body.aurora-mode::after { opacity: 1; animation: aurora-drift 9s ease-in-out inf
 
 /* v23: neighboring-country administrative region names (no weather data). */
 .neighbor-region-label-icon { background: transparent; border: 0; }
-.neighbor-region-label { color: #f4f7fb; font: 600 10px/1.1 Arial, sans-serif; text-align: center; white-space: nowrap; text-shadow: 0 1px 3px #000, 1px 0 3px #000, -1px 0 3px #000, 0 -1px 3px #000; opacity: .92; }
+.neighbor-region-label { color: #f4f7fb; font: 600 10px/1.1 Arial, sans-serif; text-align: center; white-space: nowrap; text-shadow: 0 1px 3px #000, 1px 0 3px #000, -1px 0 3px #000, 0 -1px 3px #000; opacity: .96; background: #07111dcc; border: 1px solid #b7d4ef99; border-radius: 3px; padding: 2px 3px; width: max-content; max-width: 150px; transform: translate(-50%, -50%); }
+
+
+/* Latest updates shortcut next to the app watermark */
+.latest-updates-button { position: fixed; z-index: 10501; top: 16px; left: 210px; padding: 8px 11px; color: #eaf7ff; background: rgba(0,0,0,.86); border: 1px solid #214c70; border-radius: 8px; box-shadow: 0 0 14px rgba(55,170,255,.13); font: 700 12px/1.2 Arial,sans-serif; cursor: pointer; }
+.latest-updates-button:hover { background: rgba(12,35,52,.96); border-color: #59bfff; }
+.onboarding-overlay[hidden] { display:none !important; }
+.onboarding-overlay { position:fixed; inset:0; z-index:21000; display:grid; place-items:center; padding:18px; background:rgba(0,0,0,.8); }
+.onboarding-card { width:min(460px,100%); padding:24px; color:#f4f6f8; background:#151b23; border:1px solid #31516a; border-radius:16px; box-shadow:0 20px 70px rgba(0,0,0,.65),0 0 24px rgba(55,170,255,.12); }
+.onboarding-kicker { color:#8ed8ff; font-size:10px; font-weight:800; letter-spacing:.13em; }
+.onboarding-step-count { margin-top:16px; color:#aebdca; font-size:12px; }
+.onboarding-card h2 { margin:8px 0 10px; font-size:24px; }
+.onboarding-card p { min-height:48px; margin:0; color:#d5dce5; line-height:1.55; }
+.onboarding-progress { height:5px; margin:22px 0; overflow:hidden; background:#2b3541; border-radius:99px; }
+.onboarding-progress span { display:block; width:25%; height:100%; background:#63c5ff; border-radius:99px; transition:width .2s ease; }
+.onboarding-actions { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+.onboarding-actions button { padding:10px 14px; border-radius:8px; font-weight:700; cursor:pointer; }
+.onboarding-secondary { color:#dce4ec; background:#242d38; border:1px solid #485666; }
+.onboarding-primary { color:#06121a; background:#8ed8ff; border:1px solid #8ed8ff; }
+@media(max-width:600px) { .latest-updates-button { top:52px; left:10px; padding:7px 9px; font-size:11px; } .onboarding-card { padding:20px; } .onboarding-card h2 { font-size:21px; } }

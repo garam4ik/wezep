@@ -782,7 +782,10 @@ window.addEventListener("load", () => {
     }
     let seen = "";
     try { seen = localStorage.getItem(STORAGE_KEY) || ""; } catch (_) {}
-    if (seen !== notes.version) modal.hidden = false;
+    const updatesButton = document.getElementById("latest-updates-button");
+    if (updatesButton) updatesButton.addEventListener("click", () => { modal.hidden = false; });
+    const onboardingSeen = (() => { try { return localStorage.getItem("wezeraapp-onboarding-complete") === "1"; } catch (_) { return false; } })();
+    if (seen !== notes.version && onboardingSeen) modal.hidden = false;
     ok.addEventListener("click", () => {
       modal.hidden = true;
       try { localStorage.setItem(STORAGE_KEY, notes.version); } catch (_) {}
@@ -792,6 +795,55 @@ window.addEventListener("load", () => {
   else initWhatsNew();
 })();
 
+
+// First-visit onboarding: short guided tour with Skip, Back and Next.
+(function setupOnboarding() {
+  const KEY = "wezeraapp-onboarding-complete";
+  const steps = [
+    { title: "Вітаємо на карті погоди!", text: "Натисніть на район України, щоб переглянути прогноз погоди." },
+    { title: "Керуйте картою", text: "Кнопка «Уся карта» повертає загальний огляд, а «Моє місце» може показати вашу позицію після дозволу браузера." },
+    { title: "Інструменти та вигляд", text: "У меню є шкала температур, снігопад, північне сяйво, вимірювання відстані та копіювання координат." },
+    { title: "Ваші райони та оновлення", text: "Виберіть район для прогнозу. Натисніть «Останні оновлення» біля назви WezeraApp, щоб будь-коли переглянути зміни." }
+  ];
+  function init() {
+    const modal = document.getElementById("onboarding");
+    if (!modal) return;
+    const title = document.getElementById("onboarding-title");
+    const desc = document.getElementById("onboarding-description");
+    const count = document.getElementById("onboarding-step-count");
+    const fill = document.getElementById("onboarding-progress-fill");
+    const back = document.getElementById("onboarding-back");
+    const next = document.getElementById("onboarding-next");
+    const skip = document.getElementById("onboarding-skip");
+    let index = 0;
+    let updatesModal = document.getElementById("whats-new");
+    function finish() {
+      modal.hidden = true;
+      try { localStorage.setItem(KEY, "1"); } catch (_) {}
+      const releaseModal = document.getElementById("whats-new");
+      if (releaseModal) {
+        let seen = "";
+        try { seen = localStorage.getItem("wezeraapp-whats-new-seen") || ""; } catch (_) {}
+        fetch("release-notes.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(notes => {
+          if (notes && notes.version && seen !== notes.version) releaseModal.hidden = false;
+        }).catch(() => {});
+      }
+    }
+    function render() {
+      const step = steps[index];
+      title.textContent = step.title; desc.textContent = step.text;
+      count.textContent = `Крок ${index + 1} із ${steps.length}`;
+      fill.style.width = `${((index + 1) / steps.length) * 100}%`;
+      back.hidden = index === 0;
+      next.textContent = index === steps.length - 1 ? "Завершити" : "Далі";
+    }
+    try { if (localStorage.getItem(KEY) !== "1") { modal.hidden = false; render(); } } catch (_) { modal.hidden = false; render(); }
+    next.addEventListener("click", () => { if (index < steps.length - 1) { index++; render(); } else finish(); });
+    back.addEventListener("click", () => { if (index > 0) { index--; render(); } });
+    skip.addEventListener("click", finish);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();
 
 // v14: toggleable temperature legend; purely informational and does not alter map data.
 document.addEventListener("DOMContentLoaded", () => {

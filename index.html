@@ -12,6 +12,7 @@
 </head>
 <body>
   <h1 class="wezeraapp-title">WezeraApp</h1>
+  <button id="latest-updates-button" class="latest-updates-button" type="button">✨ Останні оновлення</button>
   <main id="map" aria-label="Інтерактивна карта адміністративних меж України"></main>
   <div id="snow-overlay" class="snow-overlay" aria-hidden="true" hidden></div>
   <div id="district-tooltip" class="district-tooltip" role="status" aria-live="polite" hidden></div>
@@ -59,6 +60,20 @@
         <li>Додано режим «Північне сяйво» — м’яку анімовану підсвітку карти, яку можна ввімкнути або вимкнути.</li>
       </ul>
       <button id="whats-new-ok" type="button">ОК, зрозуміло</button>
+    </div>
+  </section>
+  <section id="onboarding" class="onboarding-overlay" role="dialog" aria-modal="true" aria-labelledby="onboarding-title" hidden>
+    <div class="onboarding-card">
+      <div class="onboarding-kicker">ЛАСКАВО ПРОСИМО ДО WEZERAAPP</div>
+      <div id="onboarding-step-count" class="onboarding-step-count">Крок 1 із 4</div>
+      <h2 id="onboarding-title">Вітаємо на карті погоди!</h2>
+      <p id="onboarding-description">Натисніть на район України, щоб переглянути прогноз погоди.</p>
+      <div class="onboarding-progress" aria-hidden="true"><span id="onboarding-progress-fill"></span></div>
+      <div class="onboarding-actions">
+        <button id="onboarding-skip" type="button" class="onboarding-secondary">Пропустити</button>
+        <button id="onboarding-back" type="button" class="onboarding-secondary" hidden>Назад</button>
+        <button id="onboarding-next" type="button" class="onboarding-primary">Далі</button>
+      </div>
     </div>
   </section>
 <script>
