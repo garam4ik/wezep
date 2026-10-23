@@ -636,17 +636,11 @@ function init() {
   });
   document.getElementById("panel-close").addEventListener("click", () => { document.getElementById("weather-panel").hidden = true; panelRequestSequence++; });
   document.addEventListener("keydown", e => { if (e.key === "Escape") { document.getElementById("weather-panel").hidden = true; panelRequestSequence++; } });
-  map = L.map("map", {
-    zoomControl: false, attributionControl: false,
-    dragging: false, touchZoom: false, scrollWheelZoom: false,
-    doubleClickZoom: false, boxZoom: false, keyboard: false,
-    tap: false, preferCanvas: true, fadeAnimation: false,
-    zoomAnimation: false, markerZoomAnimation: false
-  }).setView([48.8, 31.2], 6);
-  // Clean, non-satellite basemap. Static view reduces accidental movement and redraw work.
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png", {
-    subdomains: "abcd", maxZoom: 19, updateWhenIdle: true,
-    keepBuffer: 2, attribution: "© OpenStreetMap © CARTO"
+  map = L.map("map", { zoomControl: false, attributionControl: false, scrollWheelZoom: true, doubleClickZoom: true, preferCanvas: true }).setView([48.8, 31.2], 6);
+  // v28: public OpenStreetMap tiles; avoids Carto's API KEY REQUIRED watermark.
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19, updateWhenIdle: true, keepBuffer: 2,
+    attribution: "© OpenStreetMap contributors"
   }).addTo(map);
   const status = document.getElementById("map-action-status");
   const showMapStatus = message => { if (!status) return; status.textContent = message; status.hidden = false; window.clearTimeout(showMapStatus.timer); showMapStatus.timer = window.setTimeout(() => { status.hidden = true; }, 5000); };
@@ -733,9 +727,14 @@ function init() {
     const filteredRaions = { ...raions, features: includedRaions };
     const districtLayer = L.geoJSON(filteredRaions, { style: baseStyle, onEachFeature: bindDistrict }).addTo(map);
     districtItems.forEach(item => { item.oblast = findOblastForDistrict(item.feature); item.layer.setStyle(baseStyle(item.oblast || item.feature)); });
-    // Neutral administrative outlines; no blue/yellow decorative flag effect.
+    // Ukrainian flag-inspired luminous outline: blue above, yellow below.
     const outlineData = { ...oblasts, features: oblastFeatures };
-    L.geoJSON(outlineData, { pane: "oblastPane", interactive: false, style: () => ({ color: "#64748b", weight: 1.1, opacity: 0.95, fill: false }) }).addTo(map);
+    const flagGlowPane = map.createPane("flagGlowPane");
+    flagGlowPane.style.zIndex = 420;
+    flagGlowPane.style.pointerEvents = "none";
+    L.geoJSON(outlineData, { pane: "flagGlowPane", interactive: false, style: () => ({ color: "#ffd83d", weight: 5, opacity: 0.72, fill: false, lineCap: "round", lineJoin: "round" }) }).addTo(map);
+    L.geoJSON(outlineData, { pane: "flagGlowPane", interactive: false, style: () => ({ color: "#238cff", weight: 3, opacity: 0.98, fill: false, lineCap: "round", lineJoin: "round" }) }).addTo(map);
+    L.geoJSON(outlineData, { pane: "oblastPane", interactive: false, style: () => ({ color: "#252b35", weight: 0.9, opacity: 1, fill: false }) }).addTo(map);
     addOblastLabels();
     // v23: show first-level administrative regions in neighboring countries too.
     // These are boundary/name overlays only; weather remains Ukraine-only.

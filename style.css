@@ -4,7 +4,8 @@ html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background:
 body { font-family: Arial, sans-serif; }
 #map { position: fixed; inset: 0; width: 100vw; height: 100%; height: 100dvh; min-height: 100%; background: transparent; outline: none; }
 .leaflet-container { background: transparent !important; color: #fff; font-family: Arial, sans-serif; }
-/* v27: clean non-satellite map; no tile darkening filter. */
+/* v20: darker satellite imagery, without dimming Ukraine borders, labels, or weather overlays. */
+.leaflet-tile-pane { filter: brightness(.34) contrast(1.16) saturate(.68); }
 .leaflet-control-attribution, .leaflet-control-zoom { display: none !important; }
 .leaflet-overlay-pane svg { overflow: visible; }
 .leaflet-interactive { cursor: pointer; }
@@ -159,8 +160,6 @@ body.aurora-mode::after { opacity: 1; animation: aurora-drift 9s ease-in-out inf
 .onboarding-primary { color:#06121a; background:#8ed8ff; border:1px solid #8ed8ff; }
 @media(max-width:600px) { .latest-updates-button { top:52px; left:10px; padding:7px 9px; font-size:11px; } .onboarding-card { padding:20px; } .onboarding-card h2 { font-size:21px; } }
 
-/* v27: remove the left-side floating action buttons as requested. */
-.map-quick-actions { display: none !important; }
-/* Neutralize decorative aurora/flag-style map tinting. */
-#map { background: #edf2f7; }
+/* v28: neutral gray map canvas; never darken tiles. */
+#map { background: #dfe3e8; }
 .leaflet-tile-pane { filter: none !important; }
